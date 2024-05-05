@@ -49,12 +49,29 @@ async def get_net_image_prediction(request: Request):
     if not isValidUrl:
         return {"message": "Invalid image link provided"}
 
+  
+        
+
     pred, idx, prob = learn.predict(PILImage.create(urlopen(image_link)))
 
     classes = ["cardboard", "glass", "metal", "paper", "plastic", "trash"]
     overall_probabilities = [{"class": classes[i], "probability": float(prob[i])} for i in range(len(classes))]
     overall_probabilities = sorted(overall_probabilities, key=lambda k: k['probability'], reverse=True)
 
+    # Sending the image link and prediction info to another server
+    try:
+        response = requests.post('https://trash-prediction.vercel.app/api/save-to-db', json={
+            'image_link': image_link,
+            'prediction': {
+                'name': pred,
+                'probability': float(prob[idx])
+            },
+            'overall_probabilities': overall_probabilities
+        })
+        response.raise_for_status()  # Raise an exception for any HTTP error status
+    except Exception as e:
+        print(f"Failed to send data to the server: {e}")
+        
     return {"prediction" : {"name": pred, "probability": float(prob[idx])}, "overall_probabilities": overall_probabilities}
 
 if __name__ == "__main__":
