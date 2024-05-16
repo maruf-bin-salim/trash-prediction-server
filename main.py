@@ -31,7 +31,7 @@ async def root():
 async def get_net_image_prediction(request: Request):
     body = await request.json()
     image_link = body.get("image_link")
-    print("Image link is -> ", image_link)
+    print("Recieved Image")
 
     if(image_link == None):
         return {"message": "No image link provided"}
